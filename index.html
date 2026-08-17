@@ -177,18 +177,25 @@ textarea::placeholder { color:#b0a692; }
       currentAudio = new Audio('audio/' + encodeURIComponent(file));
       currentAudio.play().catch(() => {});
     }
+    function shuffleArray(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
     function respond() {
       const input = document.getElementById('input').value.trim();
       if (!input) { respondRandom(); return; }
       for (const v of voices) {
         if (v.keys.some(k => input.includes(k))) { play(v.file, v.text); return; }
       }
-      const r = randomVoices[Math.floor(Math.random() * randomVoices.length)];
-      play(r.file, r.text);
+      respondRandom();
     }
     function respondRandom() {
       if (shuffleQueue.length === 0) {
-        shuffleQueue = [...randomVoices].sort(() => Math.random() - 0.5);
+        shuffleQueue = shuffleArray(randomVoices);
       }
       const r = shuffleQueue.pop();
       play(r.file, r.text);
