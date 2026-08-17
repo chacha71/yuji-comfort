@@ -143,8 +143,19 @@ textarea::placeholder { color:#b0a692; }
       { file:'打起精神上吧.mp3', text:'打起精神上吧！' },
       { file:'我还能变得更强.mp3', text:'我还能变得更强！' },
       { file:'好嘞，要赢.mp3', text:'好嘞，要赢！' },
+      { file:'我可不能一直这么弱下去啊.mp3', text:'我可不能一直这么弱下去啊！' },
+      { file:'我已经不会再输了.mp3', text:'我已经不会再输了！' },
+      { file:'我绝对不会输的.mp3', text:'我绝对不会输的！' },
+      { file:'我们全力以赴上吧.mp3', text:'我们全力以赴上吧！' },
+      { file:'集中精神上吧.mp3', text:'集中精神上吧！' },
+      { file:'噢，到我出场了吗？.mp3', text:'噢，到我出场了吗？' },
+      { file:'嗯，我还挺快的.mp3', text:'嗯，我还挺快的。' },
+      { file:'偶尔也想在学校里打打球啊——虽然人数根本不够.mp3', text:'偶尔也想在学校里打打球啊——虽然人数根本不够。' },
+      { file:'杂念已经消失得干干净净了。我现在一定能变得更强。.mp3', text:'杂念已经消失得干干净净了。我现在一定能变得更强。' },
+      { file:'变强了就能拯救更多的人吧，所以我一定要变得更强。.mp3', text:'变强了就能拯救更多的人吧，所以我一定要变得更强。' },
     ];
     let currentAudio = null;
+    let lastRandomFile = null;
 
     function show(text) {
       document.getElementById('quote').textContent = text;
@@ -166,7 +177,12 @@ textarea::placeholder { color:#b0a692; }
       play(r.file, r.text);
     }
     function respondRandom() {
-      const r = randomVoices[Math.floor(Math.random() * randomVoices.length)];
+      let pool = randomVoices;
+      if (lastRandomFile && randomVoices.length > 1) {
+        pool = randomVoices.filter(v => v.file !== lastRandomFile);
+      }
+      const r = pool[Math.floor(Math.random() * pool.length)];
+      lastRandomFile = r.file;
       play(r.file, r.text);
     }
   </script>
