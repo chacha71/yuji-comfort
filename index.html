@@ -153,9 +153,19 @@ textarea::placeholder { color:#b0a692; }
       { file:'偶尔也想在学校里打打球啊——虽然人数根本不够.mp3', text:'偶尔也想在学校里打打球啊——虽然人数根本不够。' },
       { file:'杂念已经消失得干干净净了。我现在一定能变得更强。.mp3', text:'杂念已经消失得干干净净了。我现在一定能变得更强。' },
       { file:'变强了就能拯救更多的人吧，所以我一定要变得更强。.mp3', text:'变强了就能拯救更多的人吧，所以我一定要变得更强。' },
+      { file:'七海海在休息日会做些什么呢......说到底咒术师能好好休息吗？.mp3', text:'七海海在休息日会做些什么呢……' },
+      { file:'东堂，等下等下！虽然确实承蒙你照顾了，但我和你不是一个初中！.mp3', text:'东堂，等下等下！' },
+      { file:'五条老师好像是最强，但说起来咒术师会举办那种决定最强的比赛吗？.mp3', text:'五条老师好像是最强，但说起来咒术师会举办那种决定最强的比赛吗？' },
+      { file:'宿傩的手指真够难吃的，实在是没法当午饭.mp3', text:'宿傩的手指真够难吃的。' },
+      { file:'要是教玉犬做表演，伏黑会生气吗？会生气吗......嗯，会生气吧.mp3', text:'要是教玉犬做表演，伏黑会生气吗？' },
+      { file:'那个，伊地知先生。五条老师真的滴酒不沾吗？明明看起来很喜欢喝酒聚会的样子.mp3', text:'那个，伊地知先生。五条老师真的滴酒不沾吗？' },
+      { file:'可......恶.......mp3', text:'可……恶……' },
+      { file:'可恶...动不了.......mp3', text:'可恶……动不了……' },
+      { file:'我们是以全身心存在于世界上吗...谢谢，我好像有点明白了.mp3', text:'我们是以全身心存在于世界上吗……谢谢。' },
+      { file:'虽然我不知道自己死亡时会是怎样，但我不想为自己的活法后悔.mp3', text:'虽然我不知道自己死亡时会是怎样，但我不想后悔。' },
     ];
     let currentAudio = null;
-    let lastRandomFile = null;
+    let shuffleQueue = [];
 
     function show(text) {
       document.getElementById('quote').textContent = text;
@@ -177,12 +187,10 @@ textarea::placeholder { color:#b0a692; }
       play(r.file, r.text);
     }
     function respondRandom() {
-      let pool = randomVoices;
-      if (lastRandomFile && randomVoices.length > 1) {
-        pool = randomVoices.filter(v => v.file !== lastRandomFile);
+      if (shuffleQueue.length === 0) {
+        shuffleQueue = [...randomVoices].sort(() => Math.random() - 0.5);
       }
-      const r = pool[Math.floor(Math.random() * pool.length)];
-      lastRandomFile = r.file;
+      const r = shuffleQueue.pop();
       play(r.file, r.text);
     }
   </script>
