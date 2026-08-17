@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>虎杖悠仁</title>
+<style>
+:root {
+  --paper: #f3ede0;
+  --ink: #1f1a16;
+  --red: #b5352a;
+  --line: #2a241f;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: "Kaiti SC", "STKaiti", "KaiTi", "Microsoft YaHei", serif;
+  background: var(--paper);
+  background-image: radial-gradient(rgba(0,0,0,0.025) 1px, transparent 1px);
+  background-size: 3px 3px;
+  color: var(--ink);
+  min-height: 100vh;
+  padding: 40px 20px;
+  display: flex; align-items: flex-start; justify-content: center;
+}
+.page { width: 100%; max-width: 520px; position: relative; }
+.header {
+  display: flex; align-items: flex-end; gap: 14px;
+  margin-bottom: 6px; border-bottom: 3px solid var(--ink); padding-bottom: 10px;
+}
+.header h1 {
+  font-size: 46px; letter-spacing: 6px; color: var(--red);
+  font-weight: 900; line-height: 1; text-shadow: 2px 2px 0 rgba(0,0,0,0.08);
+}
+.header .jp { font-size: 13px; color: var(--ink); letter-spacing: 1px; padding-bottom: 4px; writing-mode: vertical-rl; }
+.bubble {
+  background: #fffdf8; border: 3px solid var(--line); border-radius: 2px;
+  padding: 28px 24px; margin-top: 30px; position: relative;
+  box-shadow: 4px 4px 0 rgba(31,26,22,0.9);
+}
+.bubble::before {
+  content:''; position:absolute; top:-16px; left:28px; width:0; height:0;
+  border-left:14px solid transparent; border-right:14px solid transparent; border-bottom:16px solid var(--line);
+}
+.bubble::after {
+  content:''; position:absolute; top:-10px; left:31px; width:0; height:0;
+  border-left:11px solid transparent; border-right:11px solid transparent; border-bottom:11px solid #fffdf8;
+}
+.bubble .ask { font-size:15px; color:var(--ink); margin-bottom:16px; line-height:1.7; }
+.bubble .ask .name { color:var(--red); font-weight:700; }
+textarea {
+  width:100%; min-height:90px; background:transparent; border:none;
+  border-bottom:2px dashed var(--line); color:var(--ink); font-size:17px;
+  padding:10px 4px; resize:none; font-family:inherit; line-height:1.8; outline:none;
+}
+textarea::placeholder { color:#b0a692; }
+.btns { display:flex; gap:16px; margin-top:24px; }
+.btn {
+  font-family:inherit; font-size:18px; font-weight:700; letter-spacing:3px;
+  padding:12px 22px; cursor:pointer; background:#fffdf8; border:2.5px solid var(--line);
+  border-radius:2px; color:var(--ink); transition:transform 0.06s;
+}
+.btn:active { transform:translate(2px,2px); }
+.btn-yes { background:var(--red); color:#fff; border-color:var(--line); box-shadow:3px 3px 0 rgba(31,26,22,0.9); }
+.btn-random { box-shadow:3px 3px 0 rgba(31,26,22,0.9); }
+.reply { margin-top:28px; opacity:0; transform:translateY(6px); transition:opacity 0.18s, transform 0.18s; }
+.reply.show { opacity:1; transform:translateY(0); }
+.reply .bubble2 {
+  background:#fffdf8; border:3px solid var(--line); border-radius:2px;
+  padding:18px 20px; box-shadow:4px 4px 0 rgba(31,26,22,0.9); position:relative;
+}
+.reply .bubble2::before {
+  content:''; position:absolute; top:-16px; right:28px; width:0; height:0;
+  border-left:14px solid transparent; border-right:14px solid transparent; border-bottom:16px solid var(--line);
+}
+.reply .who { font-size:13px; color:var(--red); font-weight:700; letter-spacing:1px; margin-bottom:6px; }
+.reply .quote { font-size:18px; line-height:1.7; color:var(--ink); }
+.hint { margin-top:30px; font-size:13px; color:#8a7d6b; line-height:2; letter-spacing:1px; }
+</style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <h1>虎杖悠仁</h1>
+      <span class="jp">いたどりゆうじ</span>
+    </div>
+
+    <div class="bubble">
+      <div class="ask"><span class="name">小虎</span>：问我点什么，或者说说你的心情吧。</div>
+      <textarea id="input" placeholder="怎么啦？说来听听"></textarea>
+      <div class="btns">
+        <button class="btn btn-yes" onclick="respond()">说吧</button>
+        <button class="btn btn-random" onclick="respondRandom()">随便来一句</button>
+      </div>
+    </div>
+
+    <div class="reply" id="reply">
+      <div class="bubble2">
+        <div class="who">小虎：</div>
+        <div class="quote" id="quote"></div>
+      </div>
+    </div>
+
+    <div class="hint">
+      你有什么想对小虎说的
+    </div>
+  </div>
+
+  <script>
+    // 语音库：按「人物具体问题 → 人物 → 深度问题 → 情绪」优先级匹配
+    const voices = [
+      // —— 人物 · 具体问题（最高优先级，问句更精准）——
+      { keys:['喝酒','滴酒','酒量'], file:'那个，伊地知先生。五条老师真的滴酒不沾吗？明明看起来很喜欢喝酒聚会的样子.mp3', text:'那个，伊地知先生。五条老师真的滴酒不沾吗？' },
+      { keys:['手指好吃','好吃吗','宿傩手指','味道'], file:'宿傩的手指真够难吃的，实在是没法当午饭.mp3', text:'宿傩的手指真够难吃的，实在是没法当午饭。' },
+      { keys:['五条厉害','五条最强','最强','厉害吗','谁最强'], file:'五条老师好像是最强，但说起来咒术师会举办那种决定最强的比赛吗？.mp3', text:'五条老师好像是最强，但说起来咒术师会举办那种决定最强的比赛吗？' },
+      // —— 人物 ——
+      { keys:['七海'], file:'七海海在休息日会做些什么呢......说到底咒术师能好好休息吗？.mp3', text:'七海海在休息日会做些什么呢……说到底，咒术师能好好休息吗？' },
+      { keys:['东堂'], file:'东堂，等下等下！虽然确实承蒙你照顾了，但我和你不是一个初中！.mp3', text:'东堂，等下等下！虽然确实承蒙你照顾了，但我和你不是一个初中！' },
+      { keys:['五条','悟'], file:'五条老师好像是最强，但说起来咒术师会举办那种决定最强的比赛吗？.mp3', text:'五条老师好像是最强，但说起来咒术师会举办那种决定最强的比赛吗？' },
+      { keys:['宿傩','宿滩','两面宿傩'], file:'宿傩的手指真够难吃的，实在是没法当午饭.mp3', text:'宿傩的手指真够难吃的，实在是没法当午饭。' },
+      { keys:['伏黑','玉犬'], file:'要是教玉犬做表演，伏黑会生气吗？会生气吗......嗯，会生气吧.mp3', text:'要是教玉犬做表演，伏黑会生气吗？……嗯，会生气吧。' },
+      { keys:['伊地知'], file:'那个，伊地知先生。五条老师真的滴酒不沾吗？明明看起来很喜欢喝酒聚会的样子.mp3', text:'那个，伊地知先生。五条老师真的滴酒不沾吗？' },
+      // —— 深度问题 ——
+      { keys:['为什么变强','为什么要变强','为什么'], file:'变强了就能拯救更多的人吧，所以我一定要变得更强。.mp3', text:'变强了就能拯救更多的人吧，所以我一定要变得更强。' },
+      { keys:['意义','活着','人生','迷茫','后悔','活法','死亡'], file:'虽然我不知道自己死亡时会是怎样，但我不想为自己的活法后悔.mp3', text:'虽然我不知道自己死亡时会是怎样，但我不想为自己的活法后悔。' },
+      // —— 情绪 ——
+      { keys:['累','疲惫','辛苦','撑不住','没力气','烦','疲倦'], file:'打起精神上吧.mp3', text:'打起精神上吧！' },
+      { keys:['弱','没用','放弃','做不到','不行','气馁','失败'], file:'我可不能一直这么弱下去啊.mp3', text:'我可不能一直这么弱下去啊！' },
+      { keys:['能变强吗','变强','更强','变厉害','努力','进步'], file:'我还能变得更强.mp3', text:'我还能变得更强！' },
+      { keys:['难过','伤心','心情不好','哭','委屈','难受','低落','沮丧'], file:'变强了就能拯救更多的人吧，所以我一定要变得更强。.mp3', text:'变强了就能拯救更多的人吧，所以我一定要变得更强。' },
+      { keys:['紧张','害怕','焦虑','不安','慌'], file:'集中精神上吧.mp3', text:'集中精神上吧！' },
+      { keys:['会输吗','输','败','没信心','不自信','赢不了'], file:'我已经不会再输了.mp3', text:'我已经不会再输了！' },
+      { keys:['赢','加油','比赛','竞争','考试','面试','拼'], file:'好嘞，要赢.mp3', text:'好嘞，要赢！' },
+      { keys:['出场','轮到你','到你','该我'], file:'噢，到我出场了吗？.mp3', text:'噢，到我出场了吗？' },
+      { keys:['你快','速度快','跑得快','挺快'], file:'嗯，我还挺快的.mp3', text:'嗯，我还挺快的。' },
+      { keys:['打球','运动','想玩','学校'], file:'偶尔也想在学校里打打球啊——虽然人数根本不够.mp3', text:'偶尔也想在学校里打打球啊——虽然人数根本不够。' },
+      { keys:['谢谢','感谢'], file:'我们是以全身心存在于世界上吗...谢谢，我好像有点明白了.mp3', text:'我们是以全身心存在于世界上吗……谢谢，我好像有点明白了。' },
+      { keys:['全力以赴','拼尽全力','一起','加油干'], file:'我们全力以赴上吧.mp3', text:'我们全力以赴上吧！' },
+      { keys:['杂念','静心','专注'], file:'杂念已经消失得干干净净了。我现在一定能变得更强。.mp3', text:'杂念已经消失得干干净净了。我现在一定能变得更强。' },
+      { keys:['绝对不会输','决不','不服输'], file:'我绝对不会输的.mp3', text:'我绝对不会输的！' },
+    ];
+    const randomVoices = [
+      { file:'感觉不错！.mp3', text:'感觉不错！' },
+      { file:'打起精神上吧.mp3', text:'打起精神上吧！' },
+      { file:'我还能变得更强.mp3', text:'我还能变得更强！' },
+      { file:'好嘞，要赢.mp3', text:'好嘞，要赢！' },
+    ];
+    let currentAudio = null;
+
+    function show(text) {
+      document.getElementById('quote').textContent = text;
+      document.getElementById('reply').classList.add('show');
+    }
+    function play(file, text) {
+      if (currentAudio) currentAudio.pause();
+      show(text);
+      currentAudio = new Audio('audio/' + encodeURIComponent(file));
+      currentAudio.play().catch(() => {});
+    }
+    function respond() {
+      const input = document.getElementById('input').value.trim();
+      if (!input) { respondRandom(); return; }
+      for (const v of voices) {
+        if (v.keys.some(k => input.includes(k))) { play(v.file, v.text); return; }
+      }
+      const r = randomVoices[Math.floor(Math.random() * randomVoices.length)];
+      play(r.file, r.text);
+    }
+    function respondRandom() {
+      const r = randomVoices[Math.floor(Math.random() * randomVoices.length)];
+      play(r.file, r.text);
+    }
+  </script>
+</body>
+</html>
